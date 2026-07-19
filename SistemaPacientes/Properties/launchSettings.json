@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SistemaPacientes (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SistemaPacientes (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

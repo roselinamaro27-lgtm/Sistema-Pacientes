@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="SistemaPacientes.API/SistemaPacientes.API.csproj" />
+  <Project Path="SistemaPacientes.Application/SistemaPacientes.Application.csproj" />
+  <Project Path="SistemaPacientes.Domain/SistemaPacientes.Domain.csproj" />
+  <Project Path="SistemaPacientes.Infrastructure/SistemaPacientes.Infrastructure.csproj" />
+  <Project Path="SistemaPacientes/SistemaPacientes.csproj">
+    <Platform Solution="*|ARM64" Project="ARM64" />
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="*|x86" Project="x86" />
+    <Deploy />
+  </Project>
+</Solution>
