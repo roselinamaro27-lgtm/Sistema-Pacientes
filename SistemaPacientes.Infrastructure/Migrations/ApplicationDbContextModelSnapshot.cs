@@ -30,6 +30,9 @@ namespace SistemaPacientes.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("ConsultorioId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
@@ -44,6 +47,12 @@ namespace SistemaPacientes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ConsultorioId");
+
+                    b.HasIndex("MedicoId");
+
+                    b.HasIndex("PacienteId");
 
                     b.ToTable("Citas");
                 });
@@ -150,6 +159,8 @@ namespace SistemaPacientes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PacienteId");
+
                     b.ToTable("HistorialesMedicos");
                 });
 
@@ -190,11 +201,16 @@ namespace SistemaPacientes.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("EspecialidadId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EspecialidadId");
 
                     b.ToTable("Medicos");
                 });
@@ -218,6 +234,8 @@ namespace SistemaPacientes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CitaId");
 
                     b.ToTable("Recetas");
                 });
@@ -259,9 +277,114 @@ namespace SistemaPacientes.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("RolId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("RolId");
+
                     b.ToTable("Usuarios");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Cita", b =>
+                {
+                    b.HasOne("SistemaPacientes.Domain.Consultorio", "Consultorio")
+                        .WithMany("Citas")
+                        .HasForeignKey("ConsultorioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaPacientes.Domain.Medico", "Medico")
+                        .WithMany("Citas")
+                        .HasForeignKey("MedicoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaPacientes.Domain.Entities.Paciente", "Paciente")
+                        .WithMany("Citas")
+                        .HasForeignKey("PacienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Consultorio");
+
+                    b.Navigation("Medico");
+
+                    b.Navigation("Paciente");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.HistorialMedico", b =>
+                {
+                    b.HasOne("SistemaPacientes.Domain.Entities.Paciente", "Paciente")
+                        .WithMany("HistorialesMedicos")
+                        .HasForeignKey("PacienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Paciente");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Medico", b =>
+                {
+                    b.HasOne("SistemaPacientes.Domain.Especialidad", "EspecialidadRelacion")
+                        .WithMany("Medicos")
+                        .HasForeignKey("EspecialidadId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("EspecialidadRelacion");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Receta", b =>
+                {
+                    b.HasOne("SistemaPacientes.Domain.Cita", "Cita")
+                        .WithMany("Recetas")
+                        .HasForeignKey("CitaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cita");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Usuario", b =>
+                {
+                    b.HasOne("SistemaPacientes.Domain.Rol", "RolRelacion")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("RolRelacion");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Cita", b =>
+                {
+                    b.Navigation("Recetas");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Consultorio", b =>
+                {
+                    b.Navigation("Citas");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Entities.Paciente", b =>
+                {
+                    b.Navigation("Citas");
+
+                    b.Navigation("HistorialesMedicos");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Especialidad", b =>
+                {
+                    b.Navigation("Medicos");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Medico", b =>
+                {
+                    b.Navigation("Citas");
+                });
+
+            modelBuilder.Entity("SistemaPacientes.Domain.Rol", b =>
+                {
+                    b.Navigation("Usuarios");
                 });
 #pragma warning restore 612, 618
         }

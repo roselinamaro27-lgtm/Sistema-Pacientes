@@ -1,30 +1,89 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SistemaPacientes.Domain.Interfaces;
+using SistemaPacientes.Application.Interfaces;
 using SistemaPacientes.Domain;
 
-namespace SistemaPacientes.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class RecetasController : ControllerBase
+namespace SistemaPacientes.API.Controllers
 {
-	private readonly IRecetaRepository _repositorio;
-
-	public RecetasController(IRecetaRepository repositorio)
+	[ApiController]
+	[Route("api/[controller]")]
+	public class RecetasController : ControllerBase
 	{
-		_repositorio = repositorio;
-	}
+		private readonly IRecetaService _service;
+		public RecetasController(IRecetaService service)
+		{
+			_service = service;
+		}
 
-	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Receta>>> Get()
-	{
-		return Ok(await _repositorio.GetAllAsync());
-	}
+		[HttpGet]
+		public async Task<IActionResult> GetAll()
+		{
+			var recetas = await _service.GetAllRecetas();
+			return Ok(recetas);
+		}
 
-	[HttpPost]
-	public async Task<ActionResult> Post(Receta entidad)
-	{
-		await _repositorio.AddAsync(entidad);
-		return Ok();
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetById(int id)
+		{
+			var receta = await _service.GetRecetaById(id);
+
+			if (receta == null)
+				return NotFound();
+
+			return Ok(receta);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Add(Receta receta)
+		{
+			try
+			{
+				await _service.AddReceta(receta);
+
+				return CreatedAtAction(
+					nameof(GetById),
+					new { id = receta.Id },
+					receta
+				);
+			}
+			catch (ArgumentException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> Update(int id, Receta receta)
+		{
+			if (id != receta.Id)
+				return BadRequest("El ID no coincide.");
+
+			try
+			{
+				await _service.UpdateReceta(receta);
+				return NoContent();
+			}
+			catch (KeyNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (ArgumentException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> Delete(int id)
+		{
+			try
+			{
+				await _service.DeleteReceta(id);
+				return NoContent();
+			}
+			catch (KeyNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 	}
 }

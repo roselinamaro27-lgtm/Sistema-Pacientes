@@ -1,9 +1,10 @@
-﻿using SistemaPacientes.Domain.Entities;
+﻿using SistemaPacientes.Application.Interfaces;
+using SistemaPacientes.Domain.Entities;
 using SistemaPacientes.Domain.Interfaces;
 
 namespace SistemaPacientes.Application.Services
 {
-	public class PacienteService
+	public class PacienteService : IPacienteService
 	{
 		private readonly IPacienteRepository _repository;
 
@@ -12,15 +13,45 @@ namespace SistemaPacientes.Application.Services
 			_repository = repository;
 		}
 
-		public async Task<IEnumerable<Paciente>> GetAllPacientes() => await _repository.GetAllAsync();
+		public async Task<IEnumerable<Paciente>> GetAllPacientes()
+		{
+			return await _repository.GetAllAsync();
+		}
 
-		// Aquí puedes agregar lógica de negocio (ej: validaciones antes de guardar)
+		public async Task<Paciente?> GetPacienteById(int id)
+		{
+			return await _repository.GetByIdAsync(id);
+		}
+
 		public async Task AddPaciente(Paciente paciente)
 		{
-			// Ejemplo de lógica: validación simple
-			if (string.IsNullOrEmpty(paciente.Nombre)) throw new Exception("El nombre es requerido");
+			if (string.IsNullOrWhiteSpace(paciente.Nombre))
+				throw new ArgumentException("El nombre es requerido.");
 
 			await _repository.AddAsync(paciente);
+		}
+
+		public async Task UpdatePaciente(Paciente paciente)
+		{
+			var existente = await _repository.GetByIdAsync(paciente.Id);
+
+			if (existente == null)
+				throw new KeyNotFoundException("Paciente no encontrado.");
+
+			if (string.IsNullOrWhiteSpace(paciente.Nombre))
+				throw new ArgumentException("El nombre es requerido.");
+
+			await _repository.UpdateAsync(paciente);
+		}
+
+		public async Task DeletePaciente(int id)
+		{
+			var existente = await _repository.GetByIdAsync(id);
+
+			if (existente == null)
+				throw new KeyNotFoundException("Paciente no encontrado.");
+
+			await _repository.DeleteAsync(id);
 		}
 	}
 }

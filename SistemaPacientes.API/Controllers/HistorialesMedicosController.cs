@@ -1,30 +1,90 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SistemaPacientes.Domain.Interfaces;
+using SistemaPacientes.Application.Interfaces;
 using SistemaPacientes.Domain;
 
-namespace SistemaPacientes.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class HistorialesMedicosController : ControllerBase
+namespace SistemaPacientes.API.Controllers
 {
-	private readonly IHistorialMedicoRepository _repositorio;
-
-	public HistorialesMedicosController(IHistorialMedicoRepository repositorio)
+	[ApiController]
+	[Route("api/[controller]")]
+	public class HistorialesMedicosController : ControllerBase
 	{
-		_repositorio = repositorio;
-	}
+		private readonly IHistorialMedicoService _service;
 
-	[HttpGet]
-	public async Task<ActionResult<IEnumerable<HistorialMedico>>> Get()
-	{
-		return Ok(await _repositorio.GetAllAsync());
-	}
+		public HistorialesMedicosController(IHistorialMedicoService service)
+		{
+			_service = service;
+		}
 
-	[HttpPost]
-	public async Task<ActionResult> Post(HistorialMedico entidad)
-	{
-		await _repositorio.AddAsync(entidad);
-		return Ok();
+		[HttpGet]
+		public async Task<IActionResult> GetAll()
+		{
+			var historiales = await _service.GetAllHistoriales();
+			return Ok(historiales);
+		}
+
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetById(int id)
+		{
+			var historial = await _service.GetHistorialById(id);
+
+			if (historial == null)
+				return NotFound();
+
+			return Ok(historial);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Add(HistorialMedico historial)
+		{
+			try
+			{
+				await _service.AddHistorial(historial);
+
+				return CreatedAtAction(
+					nameof(GetById),
+					new { id = historial.Id },
+					historial
+				);
+			}
+			catch (ArgumentException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> Update(int id, HistorialMedico historial)
+		{
+			if (id != historial.Id)
+				return BadRequest("El ID no coincide.");
+
+			try
+			{
+				await _service.UpdateHistorial(historial);
+				return NoContent();
+			}
+			catch (KeyNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (ArgumentException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> Delete(int id)
+		{
+			try
+			{
+				await _service.DeleteHistorial(id);
+				return NoContent();
+			}
+			catch (KeyNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 	}
 }

@@ -1,30 +1,90 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SistemaPacientes.Domain.Interfaces;
+using SistemaPacientes.Application.Interfaces;
 using SistemaPacientes.Domain;
 
-namespace SistemaPacientes.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class CitasController : ControllerBase
+namespace SistemaPacientes.API.Controllers
 {
-	private readonly ICitaRepository _repositorio;
-
-	public CitasController(ICitaRepository repositorio)
+	[ApiController]
+	[Route("api/[controller]")]
+	public class CitasController : ControllerBase
 	{
-		_repositorio = repositorio;
-	}
+		private readonly ICitaService _service;
 
-	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Cita>>> Get()
-	{
-		return Ok(await _repositorio.GetAllAsync());
-	}
+		public CitasController(ICitaService service)
+		{
+			_service = service;
+		}
 
-	[HttpPost]
-	public async Task<ActionResult> Post(Cita entidad)
-	{
-		await _repositorio.AddAsync(entidad);
-		return Ok();
+		[HttpGet]
+		public async Task<IActionResult> GetAll()
+		{
+			var citas = await _service.GetAllCitas();
+			return Ok(citas);
+		}
+
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetById(int id)
+		{
+			var cita = await _service.GetCitaById(id);
+
+			if (cita == null)
+				return NotFound();
+
+			return Ok(cita);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Add(Cita cita)
+		{
+			try
+			{
+				await _service.AddCita(cita);
+
+				return CreatedAtAction(
+					nameof(GetById),
+					new { id = cita.Id },
+					cita
+				);
+			}
+			catch (ArgumentException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> Update(int id, Cita cita)
+		{
+			if (id != cita.Id)
+				return BadRequest("El ID no coincide.");
+
+			try
+			{
+				await _service.UpdateCita(cita);
+				return NoContent();
+			}
+			catch (KeyNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (ArgumentException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> Delete(int id)
+		{
+			try
+			{
+				await _service.DeleteCita(id);
+				return NoContent();
+			}
+			catch (KeyNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 	}
 }

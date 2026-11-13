@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SistemaPacientes.Application.Interfaces;
 using SistemaPacientes.Application.Services;
 using SistemaPacientes.Domain.Interfaces;
 using SistemaPacientes.Infrastructure.Data;
@@ -6,11 +7,9 @@ using SistemaPacientes.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Registrar el DbContext con la cadena de conexión
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Registrar Repositorios (Patrón: Interfaz, Clase)
 builder.Services.AddScoped<ICitaRepository, CitaRepository>();
 builder.Services.AddScoped<IConsultorioRepository, ConsultorioRepository>();
 builder.Services.AddScoped<IEspecialidadRepository, EspecialidadRepository>();
@@ -22,17 +21,33 @@ builder.Services.AddScoped<IRecetaRepository, RecetaRepository>();
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 
-// 3. Registrar Servicios (Si tienes interfaces para servicios, usa: AddScoped<IService, Service>())
-builder.Services.AddScoped<PacienteService>();
+builder.Services.AddScoped<IPacienteService, PacienteService>();
+builder.Services.AddScoped<ICitaService, CitaService>();
+builder.Services.AddScoped<IConsultorioService, ConsultorioService>();
+builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
+builder.Services.AddScoped<IHistorialMedicoService, HistorialMedicoService>();
+builder.Services.AddScoped<IMedicamentoService, MedicamentoService>();
+builder.Services.AddScoped<IMedicoService, MedicoService>();
+builder.Services.AddScoped<IRecetaService, RecetaService>();
+builder.Services.AddScoped<IRolService, RolService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-// Add services to the container.
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("ReactPolicy", policy =>
+	{
+		policy.WithOrigins("http://localhost:5173")
+			  .AllowAnyHeader()
+			  .AllowAnyMethod();
+	});
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
@@ -40,7 +55,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("ReactPolicy");
+
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

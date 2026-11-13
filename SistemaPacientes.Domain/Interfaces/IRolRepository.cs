@@ -1,8 +1,13 @@
 ﻿using SistemaPacientes.Domain;
-namespace SistemaPacientes.Domain.Interfaces;
 
-public interface IRolRepository
+namespace SistemaPacientes.Domain.Interfaces
 {
-	Task<IEnumerable<Rol>> GetAllAsync();
-	Task AddAsync(Rol entidad);
+	public interface IRolRepository
+	{
+		Task<IEnumerable<Rol>> GetAllAsync();
+		Task<Rol?> GetByIdAsync(int id);
+		Task AddAsync(Rol entidad);
+		Task UpdateAsync(Rol entidad);
+		Task DeleteAsync(int id);
+	}
 }
