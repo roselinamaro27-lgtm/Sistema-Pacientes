@@ -1,0 +1,1 @@
+Sistema de Gestión de Pacientes desarrollado como proyecto académico del ITLA. Implementa arquitectura de N capas, programación mediante interfaces, patrón repositorio, servicios, Entity Framework Core y ASP.NET Core Web API. Integra una aplicación frontend en React que consume la API y permite gestionar pacientes mediante operaciones CRUD.
